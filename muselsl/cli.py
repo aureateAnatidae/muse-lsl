@@ -94,7 +94,7 @@ class CLI:
             action="store_true",
             help="Include gyroscope data")
         parser.add_argument(
-            '-d',
+            '-de',
             '--disable-eeg',
             dest='disable_eeg',
             action='store_true',
@@ -105,13 +105,20 @@ class CLI:
             dest='disable_light',
             action='store_true',
             help='Turn off light on the Muse S headband')
-
+        parser.add_argument(
+            "-d",
+            "--debug",
+            dest="debug",
+            default=False,
+            action='store_true',
+            help="Display all debug messages, including bluetooth backend.")
 
         args = parser.parse_args(sys.argv[2:])
         from . import stream
 
         stream(args.address, args.backend, args.interface, args.name, args.ppg,
-               args.acc, args.gyro, args.disable_eeg, args.preset, args.disable_light, args.timeout)
+               args.acc, args.gyro, args.disable_eeg, args.preset, args.disable_light,
+               args.timeout, args.debug)
 
     def record(self):
         parser = argparse.ArgumentParser(

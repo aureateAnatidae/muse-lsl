@@ -11,9 +11,6 @@ from . import backends
 from . import helper
 from .constants import *
 
-logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
-logger = logging.getLogger(__name__)
-
 
 class Muse():
     """Muse 2016 headband"""
@@ -32,7 +29,8 @@ class Muse():
                  name=None,
                  preset=None,
                  disable_light=False,
-                 timeout=None):
+                 timeout=None,
+                 debug=True):
         """Initialize
 
         callback_eeg -- callback for eeg data, function(data, timestamps)
@@ -44,6 +42,8 @@ class Muse():
         callback_gyro -- function(timestamp, samples)
         - samples is a list of 3 samples, where each sample is [x, y, z]
         """
+        self.logger = logging.getLogger(__name__)
+        self.logger.propagate = True
 
         self.address = address
         self.timeout=timeout
@@ -72,11 +72,11 @@ class Muse():
         """Connect to the device"""
         try:
             if self.backend == 'bluemuse':
-                logger.info('Starting BlueMuse.')
+                self.logger.info('Starting BlueMuse.')
                 subprocess.call('start bluemuse:', shell=True)
                 self.last_timestamp = self.time_func()
             else:
-                logger.info('Connecting to %s: %s...' % (self.name
+                self.logger.info('Connecting to %s: %s...' % (self.name
                                                    if self.name else 'Muse',
                                                    self.address))
                 if self.backend == 'gatt':
@@ -153,7 +153,7 @@ class Muse():
                 return True
 
             else:
-                logger.error('Connection to', self.address, 'failed')
+                self.logger.error('Connection to', self.address, 'failed')
                 return False
 
     def _write_cmd(self, cmd):
@@ -268,7 +268,7 @@ class Muse():
         if preset[0] == 'p':
             preset = preset[1:]
         if str(preset) != '21':
-            logger.debug('Sending command for non-default preset: p' + preset)
+            self.logger.debug('Sending command for non-default preset: p' + preset)
         preset = bytes(preset, 'utf-8')
         self._write_cmd([0x04, 0x70, *preset, 0x0a])
 
@@ -376,7 +376,7 @@ class Muse():
         if handle == 35:
             if tm != self.last_tm + 1:
                 if (tm - self.last_tm) != -65535:  # counter reset
-                    logger.debug("missing sample %d : %d" % (tm, self.last_tm))
+                    self.logger.debug("missing sample %d : %d" % (tm, self.last_tm))
                     # correct sample index for timestamp estimation
                     self.sample_index += 12 * (tm - self.last_tm + 1)
 
@@ -572,7 +572,7 @@ class Muse():
         # last data received
         if handle == 62:
             if tm != self.last_tm_ppg + 1:
-                logger.debug("missing sample %d : %d" % (tm, self.last_tm_ppg))
+                self.logger.debug("missing sample %d : %d" % (tm, self.last_tm_ppg))
             self.last_tm_ppg = tm
 
             # calculate index of time samples
