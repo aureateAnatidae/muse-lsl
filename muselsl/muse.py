@@ -29,8 +29,7 @@ class Muse():
                  name=None,
                  preset=None,
                  disable_light=False,
-                 timeout=None,
-                 debug=True):
+                 timeout=None):
         """Initialize
 
         callback_eeg -- callback for eeg data, function(data, timestamps)
@@ -42,6 +41,8 @@ class Muse():
         callback_gyro -- function(timestamp, samples)
         - samples is a list of 3 samples, where each sample is [x, y, z]
         """
+        logging.basicConfig(stream=sys.stdout)
+
         self.logger = logging.getLogger(__name__)
         self.logger.propagate = True
 

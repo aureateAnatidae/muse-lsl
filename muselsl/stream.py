@@ -1,6 +1,6 @@
 import re
 import subprocess
-from sys import platform
+from sys import platform, stdout
 from time import time
 from functools import partial
 from shutil import which
@@ -18,7 +18,9 @@ from .constants import MUSE_SCAN_TIMEOUT, AUTO_DISCONNECT_DELAY,  \
     MUSE_NB_GYRO_CHANNELS, MUSE_SAMPLING_GYRO_RATE, LSL_GYRO_CHUNK
 
 import logging
-import sys
+
+logger = logging.getLogger(__name__)
+
 
 def _print_muse_list(muses):
     for m in muses:
@@ -137,9 +139,8 @@ def stream(
     disable_light=False,
     timeout=None,
     debug=True
-):
-    logger = logging.getLogger(__name__)
-    logging.basicConfig(stream=sys.stdout, level=logging.DEBUG if debug else logging.INFO)
+):  
+    logging.basicConfig(stream=stdout, level=logging.DEBUG if debug else logging.INFO)
 
     # If no data types are enabled, we warn the user and return immediately.
     if eeg_disabled and not ppg_enabled and not acc_enabled and not gyro_enabled:
@@ -222,7 +223,7 @@ def stream(
         push_gyro = partial(push, outlet=gyro_outlet) if gyro_enabled else None
 
         muse = Muse(address=address, callback_eeg=push_eeg, callback_ppg=push_ppg, callback_acc=push_acc, callback_gyro=push_gyro,
-                    backend=backend, interface=interface, name=name, preset=preset, disable_light=disable_light, timeout=timeout, debug=debug)
+                    backend=backend, interface=interface, name=name, preset=preset, disable_light=disable_light, timeout=timeout)
 
         didConnect = muse.connect()
 
